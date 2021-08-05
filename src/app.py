@@ -1,4 +1,5 @@
 from flask import Flask,request,Response,jsonify,json
+from flask.helpers import url_for
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import fields,schema,validates,Schema
 from sqlalchemy import Column
@@ -18,7 +19,10 @@ def create_app():
 
 
     from .views.RolesView import role_api as role_blueprint
+    from .views.UsuarioView import user_api as usuario_blueprint
+
     app.register_blueprint(role_blueprint,url_prefix="/api/roles")
+    app.register_blueprint(usuario_blueprint,url_prefix="/api/usuarios")
 
     class Task(db.Model):
 
