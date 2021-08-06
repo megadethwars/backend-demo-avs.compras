@@ -18,7 +18,6 @@ user_api = Blueprint("user_api",__name__)
 
 @user_api.route("",methods=["POST"])
 def create():
-    
 
     try:
         req_data = request.get_json()
@@ -33,6 +32,59 @@ def create():
         user.save()
         serialized_user = dict()
         serialized_user = user_schema.dump(user)
+        return ReturnCodes.custom_response(serialized_user,201,"usuario creado")
+
+       
+    except Exception as ex:
+        return ReturnCodes.custom_response({},409,str(ex))
+
+
+@user_api.route("",methods=['GET'])
+def get_all():
+    try:
+   
+        
+        users = UserModel.get_all()
+        serialized_user = user_schema.dump(users,many=True)
+        return ReturnCodes.custom_response(serialized_user,201,"success")
+
+    except Exception as ex:
+        return ReturnCodes.custom_response({},409,str(ex))
+
+
+@user_api.route("/<int:id>",methods=['GET'])
+def get_by_id(id):
+    try:
+    
+        users = UserModel.get_by_id(id)
+        if not users:
+            return ReturnCodes.custom_response({},404,"no encontrado")
+
+        serialized_user = user_schema.dump(users)
+        return ReturnCodes.custom_response(serialized_user,201,"success")
+
+    except Exception as ex:
+        return ReturnCodes.custom_response({},409,str(ex))
+
+
+@user_api.route("/<int:id>",methods=["PUT"])
+def update(id):
+
+    try:
+        req_data = request.get_json()
+        if "perfil" in req_data:
+            req_data['perfil']=bytes(json.dumps(req_data['perfil']), 'utf8')
+            blob = req_data['perfil']
+
+        data = user_schemaIn.load(req_data,unknown="EXCLUDE")
+        user = users = UserModel.get_by_id(id)
+        if not user:
+            return ReturnCodes.custom_response({},404,"no encontrado")
+
+       
+        users.update(data)
+        serialized_user = dict()
+        serialized_user = user_schema.dump(users)
         return ReturnCodes.custom_response(serialized_user,201,"usuario creado")
 
        

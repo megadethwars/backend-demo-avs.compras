@@ -70,6 +70,7 @@ class Userschema(Schema):
     efectivo = fields.Int()
     rol = fields.Int()
     perfil = fields.String()
+    fechaCreacion = fields.DateTime()
 
 class UserschemaIn(Schema):
     username = fields.String()

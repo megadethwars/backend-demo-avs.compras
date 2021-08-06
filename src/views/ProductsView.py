@@ -30,6 +30,10 @@ def create():
 
         if rol:
             return ReturnCodes.custom_response({},409,"el producto ya existe")
+        
+        if req_data['cantidad']==0:
+            return ReturnCodes.custom_response({},409,"la cantidad es cero")
+
         product = ProductsModel(data,blob)
         product.save()
         serialized_product = dict()
