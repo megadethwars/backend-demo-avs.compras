@@ -20,9 +20,11 @@ def create_app():
 
     from .views.RolesView import role_api as role_blueprint
     from .views.UsuarioView import user_api as usuario_blueprint
+    from .views.ProductsView import product_api  as product_blueprint
 
     app.register_blueprint(role_blueprint,url_prefix="/api/roles")
     app.register_blueprint(usuario_blueprint,url_prefix="/api/usuarios")
+    app.register_blueprint(product_blueprint,url_prefix="/api/products")
 
     class Task(db.Model):
 
