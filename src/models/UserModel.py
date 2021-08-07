@@ -59,6 +59,10 @@ class UserModel(db.Model):
     def get_by_name(id):
         return UserModel.query.filter_by(username=id).first()
 
+    @staticmethod
+    def get_by_name_id(id,name):
+        return UserModel.query.filter((UserModel.username==name) & (UserModel.id!=id)).first()
+
     def __repr(self):
         return "<id {}>".format(self.id)
 
@@ -80,3 +84,9 @@ class UserschemaIn(Schema):
     rol = fields.Int()
     fechaCreacion = fields.DateTime()
     perfil = fields.String()
+
+
+class UserschemaUpCash(Schema):
+    id = fields.Int()
+    efectivo = fields.Int()
+   

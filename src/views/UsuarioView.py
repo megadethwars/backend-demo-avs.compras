@@ -46,7 +46,7 @@ def get_all():
         
         users = UserModel.get_all()
         serialized_user = user_schema.dump(users,many=True)
-        return ReturnCodes.custom_response(serialized_user,201,"success")
+        return ReturnCodes.custom_response(serialized_user,200,"success")
 
     except Exception as ex:
         return ReturnCodes.custom_response({},409,str(ex))
@@ -61,7 +61,7 @@ def get_by_id(id):
             return ReturnCodes.custom_response({},404,"no encontrado")
 
         serialized_user = user_schema.dump(users)
-        return ReturnCodes.custom_response(serialized_user,201,"success")
+        return ReturnCodes.custom_response(serialized_user,200,"success")
 
     except Exception as ex:
         return ReturnCodes.custom_response({},409,str(ex))
@@ -77,15 +77,20 @@ def update(id):
             blob = req_data['perfil']
 
         data = user_schemaIn.load(req_data,unknown="EXCLUDE")
-        user = users = UserModel.get_by_id(id)
-        if not user:
+        users = UserModel.get_by_id(id)
+        if not users:
             return ReturnCodes.custom_response({},404,"no encontrado")
 
-       
+        if req_data['username']:
+            repeateduser = UserModel.get_by_name_id(id,req_data['username'])
+            if repeateduser:
+                return ReturnCodes.custom_response({},404,"usuario repetido")
+
+
         users.update(data)
         serialized_user = dict()
         serialized_user = user_schema.dump(users)
-        return ReturnCodes.custom_response(serialized_user,201,"usuario creado")
+        return ReturnCodes.custom_response(serialized_user,200,"usuario creado")
 
        
     except Exception as ex:
