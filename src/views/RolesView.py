@@ -35,3 +35,18 @@ def create():
        
     except Exception as ex:
         return ReturnCodes.custom_response({},409,str(ex))
+
+
+@role_api.route("",methods=['GET'])
+def get_by_id():
+    try:
+    
+        roles = RoleModel.get_all()
+        if not roles:
+            return ReturnCodes.custom_response({},404,"no encontrado")
+
+        serialized_role = role_schema.dump(roles,many=True)
+        return ReturnCodes.custom_response(serialized_role,200,"success")
+
+    except Exception as ex:
+        return ReturnCodes.custom_response({},409,str(ex))

@@ -86,6 +86,12 @@ def get_all():
         
         compras = ComprasModel.get_all()
         serialized_compra = compra_schema.dump(compras,many=True)
+        for ser_compra in serialized_compra:
+            products = ProductsModel.get_by_id(ser_compra['producto'])
+            ser_compra['producto']=product_schema.dump(products)
+
+            users = UserModel.get_by_id(ser_compra['usuario'])
+            ser_compra['usuario'] = user_schema.dump(users)
         return ReturnCodes.custom_response(serialized_compra,200,"success")
 
     except Exception as ex:
@@ -101,6 +107,11 @@ def get_by_id(id):
             return ReturnCodes.custom_response({},404,"no encontrado")
 
         serialized_compra = compra_schema.dump(compras)
+        products = ProductsModel.get_by_id(serialized_compra['producto'])
+        serialized_compra['producto']=product_schema.dump(products)
+
+        users = UserModel.get_by_id(serialized_compra['usuario'])
+        serialized_compra['usuario'] = user_schema.dump(users)
         return ReturnCodes.custom_response(serialized_compra,200,"success")
 
     except Exception as ex:
@@ -118,6 +129,13 @@ def query():
 
         compra = ComprasModel.get_by_query(jsonfiltros)
         serialized_compra = compra_schema.dump(compra,many=True)
+        for ser_compra in serialized_compra:
+            products = ProductsModel.get_by_id(ser_compra['producto'])
+            ser_compra['producto']=product_schema.dump(products)
+
+            users = UserModel.get_by_id(ser_compra['usuario'])
+            ser_compra['usuario'] = user_schema.dump(users)
+
         return ReturnCodes.custom_response(serialized_compra,200,"ok")
    
     except Exception as ex:
