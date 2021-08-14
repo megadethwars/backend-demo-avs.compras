@@ -24,7 +24,7 @@ def create():
 
     try:
         req_data = request.get_json()
-        req_data['perfil']=bytes(json.dumps(req_data['perfil']), 'utf8')
+        req_data['perfil']=bytes(json.dumps(req_data['perfil']).replace('"',''), 'utf8')
         blob = req_data['perfil']
         data = user_schemaIn.load(req_data)
         rol = UserModel.get_by_name(req_data['username'])
@@ -76,7 +76,7 @@ def update(id):
     try:
         req_data = request.get_json()
         if "perfil" in req_data:
-            req_data['perfil']=bytes(json.dumps(req_data['perfil']), 'utf8')
+            req_data['perfil']=bytes(json.dumps(req_data['perfil']).replace('"',''), 'utf8')
             blob = req_data['perfil']
 
         data = user_schemaIn.load(req_data,unknown="EXCLUDE")

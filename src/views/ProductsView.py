@@ -25,7 +25,8 @@ def create():
 
     try:
         req_data = request.get_json()
-        req_data['perfil']=bytes(json.dumps(req_data['perfil']), 'utf8')
+        req_data['perfil']=bytes(json.dumps(req_data['perfil']).replace('"',''), 'utf8')
+        
         blob = req_data['perfil']
         data = product_schemaIn.load(req_data)
         rol = ProductsModel.get_by_name(req_data['nombre'])
@@ -70,6 +71,7 @@ def get_by_id(id):
             return ReturnCodes.custom_response({},404,"no encontrado")
 
         serialized_product = product_schema.dump(products)
+        #serialized_product["perfil"]=products.perfil.decode("utf-8")
         return ReturnCodes.custom_response(serialized_product,200,"success")
 
     except Exception as ex:
@@ -82,11 +84,14 @@ def update(id):
     try:
         req_data = request.get_json()
         if "perfil" in req_data:
-            req_data['perfil']=bytes(json.dumps(req_data['perfil']), 'utf8')
+            
+            req_data['perfil']=bytes(json.dumps(req_data['perfil']).replace('"',''), 'utf8')
             blob = req_data['perfil']
 
+    
+        products = ProductsModel.get_by_id(id)       
+        #req_data["cantidad"] = products.cantidad+req_data['cantidad']
         data = product_schemaIn.load(req_data,unknown="EXCLUDE")
-        products = ProductsModel.get_by_id(id)
         if not products:
             return ReturnCodes.custom_response({},404,"no encontrado")
 
