@@ -83,3 +83,4 @@ class ProductschemaIn(Schema):
     precio = fields.Int()
     cantidad = fields.Int()
     perfil = fields.String()
+    fechaCreacion = fields.DateTime()

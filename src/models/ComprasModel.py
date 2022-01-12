@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from marshmallow import fields,schema,validates,Schema
 from sqlalchemy import Column
 import datetime
@@ -15,6 +16,7 @@ class ComprasModel(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     usuario = db.Column(db.Integer,db.ForeignKey("usuarios.id"),nullable = False)
     producto = db.Column(db.Integer,db.ForeignKey("products.id"),nullable = False)
+    cantidad = db.Column(db.Integer)
     fechaCreacion = db.Column(db.DateTime)
     
  
@@ -22,6 +24,7 @@ class ComprasModel(db.Model):
     
         self.usuario = data.get("usuario")
         self.producto = data.get("producto")
+        self.cantidad = data.get("cantidad")
         self.fechaCreacion = datetime.datetime.now()
 
     def save(self):
@@ -58,7 +61,7 @@ class ComprasModel(db.Model):
 
     @staticmethod
     def get_by_usuario(id):
-        return ComprasModel.query.filter_by(usuairo=id).first()
+        return ComprasModel.query.filter_by(usuario=id).first()
 
     @staticmethod
     def del_by_producto(id):
@@ -66,11 +69,16 @@ class ComprasModel(db.Model):
 
     @staticmethod
     def del_by_usuario(id):
-        return ComprasModel.query.filter_by(usuairo=id).delete()
+        return ComprasModel.query.filter_by(usuario=id).delete()
 
     @staticmethod
     def get_by_query(data):
         return ComprasModel.query.filter_by(**data).all()
+
+    
+    @staticmethod
+    def get_all_by_page(page,per_page):
+        return ComprasModel.query.order_by(ComprasModel.fechaCreacion.desc()).paginate(page,per_page,error_out=False)
 
     def __repr(self):
         return "<id {}>".format(self.id)
@@ -79,12 +87,15 @@ class Compraschema(Schema):
     id = fields.Int()
     usuario = fields.Int()
     producto = fields.Int()
+    cantidad = fields.Int()
     fechaCreacion = fields.DateTime()
     
 
 class CompraschemaIn(Schema):
     usuario = fields.Int(required=True)
     producto = fields.Int(required=True)
+    cantidad = fields.Int(required=True)
+    fechaCreacion = fields.DateTime()
     
 class ComprasQuerySchema(Schema):
     filtros = fields.Dict()

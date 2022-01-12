@@ -29,7 +29,10 @@ def create():
     try:
         req_data = request.get_json()
         data = compra_schemaIn.load(req_data)
+        purchaseCantidad=req_data["cantidad"]
 
+        if purchaseCantidad==0:
+            return ReturnCodes.custom_response({},409,"compra invalida sin cantidad")
         #check if user exist
         rol = UserModel.get_by_id(req_data['usuario'])
 
@@ -41,15 +44,15 @@ def create():
             return ReturnCodes.custom_response({},409,"el producto no existe")
 
         #check if stock is available
-        if producto.cantidad<1:
+        if producto.cantidad<purchaseCantidad:
             return ReturnCodes.custom_response({},409,"no hay cantidad suficiente para comprar el producto "+producto.nombre)
 
         #check is user money is available
-        if rol.efectivo<1:
+        if rol.efectivo<producto.precio*purchaseCantidad:
             return ReturnCodes.custom_response({},409,"el usuario" +rol.username+"no tiene efectivo para realizar una compra")
         
         #check is user has enought money to pay
-        if rol.efectivo<producto.cantidad:
+        if rol.efectivo<producto.precio*purchaseCantidad:
             return ReturnCodes.custom_response({},409,"el usuario"+rol.username+"no tiene efectivo suficiente para realizar una compra")
 
         compra = ComprasModel(data)
@@ -58,13 +61,13 @@ def create():
         
         # update cash user
         userToUpdate = UserModel.get_by_id(rol.id)
-        userToUpdate.efectivo =rol.efectivo - producto.cantidad
+        userToUpdate.efectivo =rol.efectivo - producto.precio*purchaseCantidad
         db.session.commit()
 
 
         #update product table
         productToUpdate =ProductsModel.get_by_id(producto.id)
-        productToUpdate.cantidad = producto.cantidad -1
+        productToUpdate.cantidad = producto.cantidad -purchaseCantidad
         db.session.commit()
 
         
@@ -79,6 +82,30 @@ def create():
     except Exception as ex:
         return ReturnCodes.custom_response({},409,str(ex))
 
+
+@compra_api.route('/paginate/<int:page>',methods=['GET'])
+def view(page=1):
+    per_page = 15
+    #posts = Posts.query.order_by(Posts.time.desc()).paginate(page,per_page,error_out=False)
+    try:
+   
+        
+        compras = ComprasModel.get_all_by_page(page,per_page)
+        serialized_compra = compra_schema.dump(compras.items,many=True)
+        for ser_compra in serialized_compra:
+            products = ProductsModel.get_by_id(ser_compra['producto'])
+            ser_compra['producto']=product_schema.dump(products)
+
+            users = UserModel.get_by_id(ser_compra['usuario'])
+            ser_compra['usuario'] = user_schema.dump(users)
+            ser_compra['usuario']['perfil']=""
+        return ReturnCodes.custom_response(serialized_compra,200,"success")
+
+    except Exception as ex:
+        return ReturnCodes.custom_response({},409,str(ex))
+
+
+
 @compra_api.route("",methods=['GET'])
 def get_all():
     try:
@@ -92,6 +119,7 @@ def get_all():
 
             users = UserModel.get_by_id(ser_compra['usuario'])
             ser_compra['usuario'] = user_schema.dump(users)
+            ser_compra['usuario']['perfil']=""
         return ReturnCodes.custom_response(serialized_compra,200,"success")
 
     except Exception as ex:
@@ -112,6 +140,7 @@ def get_by_id(id):
 
         users = UserModel.get_by_id(serialized_compra['usuario'])
         serialized_compra['usuario'] = user_schema.dump(users)
+        serialized_compra['usuario']['perfil']=""
         return ReturnCodes.custom_response(serialized_compra,200,"success")
 
     except Exception as ex:
@@ -135,7 +164,7 @@ def query():
 
             users = UserModel.get_by_id(ser_compra['usuario'])
             ser_compra['usuario'] = user_schema.dump(users)
-
+            ser_compra['usuario']['perfil']=""
         return ReturnCodes.custom_response(serialized_compra,200,"ok")
    
     except Exception as ex:
